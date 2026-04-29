@@ -2,7 +2,7 @@
 <html>
 <head>
 <meta charset="UTF-8">
-<title>Age & Gender Detection</title>
+<title>AI Age & Gender Detection</title>
 
 <style>
 body {
@@ -13,29 +13,31 @@ body {
 }
 
 header {
-    display: flex;
-    justify-content: space-between;
-    padding: 20px 40px;
+    padding: 20px;
+    text-align: center;
+    font-size: 22px;
     font-weight: bold;
 }
 
+/* Layout */
 .main {
     display: flex;
-    padding: 20px;
     gap: 20px;
+    padding: 20px;
 }
 
 .left { width: 70%; }
 .right { width: 30%; }
 
+/* Card */
 .card {
-    background: #0f172a;
+    background: rgba(15,23,42,0.7);
+    backdrop-filter: blur(10px);
     padding: 20px;
     border-radius: 15px;
-    margin-bottom: 20px;
-    border: 1px solid rgba(255,255,255,0.05);
 }
 
+/* Button */
 button {
     padding: 12px 20px;
     border-radius: 8px;
@@ -46,22 +48,41 @@ button {
     margin-top: 10px;
 }
 
-input {
-    margin-top: 10px;
+/* Image */
+.img-box {
+    position: relative;
+    display: inline-block;
 }
 
 img {
-    margin-top: 15px;
-    max-width: 300px;
+    max-width: 350px;
     border-radius: 10px;
 }
 
-.result {
-    font-size: 18px;
-    margin-top: 15px;
-    color: #22c55e;
+/* Fake Face Box */
+.face-box {
+    position: absolute;
+    border: 3px solid #22c55e;
+    display: none;
 }
 
+/* Loading */
+.loading {
+    margin-top: 15px;
+    color: yellow;
+    display: none;
+}
+
+/* Result */
+.result {
+    margin-top: 15px;
+    font-size: 18px;
+    color: #22c55e;
+    opacity: 0;
+    transition: 0.5s;
+}
+
+/* Explanation */
 .highlight {
     color: #38bdf8;
     font-weight: bold;
@@ -71,62 +92,98 @@ img {
 
 <body>
 
-<header>
-    <div>🤖 Age & Gender Detection</div>
-</header>
+<header>🤖 AI Age & Gender Detection</header>
 
 <div class="main">
 
+<!-- LEFT -->
 <div class="left">
 
 <div class="card">
+
     <h3>📸 Upload Image</h3>
-    <input type="file" id="imageInput" accept="image/*">
-    <br>
-    <button onclick="detect()">Detect Age & Gender</button>
-    <br>
-    <img id="preview" src="">
+
+    <input type="file" id="imageInput" accept="image/*"><br>
+    <button onclick="detect()">Detect</button>
+
+    <div class="img-box">
+        <img id="preview">
+        <div id="faceBox" class="face-box"></div>
+    </div>
+
+    <div class="loading" id="loading">⏳ Detecting face...</div>
+
     <div class="result" id="output"></div>
-</div>
 
 </div>
 
+</div>
+
+<!-- RIGHT -->
 <div class="right card">
-    <h3>📘 Explanation</h3>
 
-    <p><span class="highlight">Face Detection:</span> Detects faces using deep learning models.</p>
+<h3>📘 How It Works</h3>
 
-    <p><span class="highlight">Gender Classification:</span> Predicts Male or Female.</p>
+<p><span class="highlight">Step 1:</span> Detect face using deep learning.</p>
+<p><span class="highlight">Step 2:</span> Extract facial features.</p>
+<p><span class="highlight">Step 3:</span> Predict gender.</p>
+<p><span class="highlight">Step 4:</span> Estimate age range.</p>
 
-    <p><span class="highlight">Age Prediction:</span> Classifies into age groups like (25–32).</p>
+<p><span class="highlight">Tech:</span> OpenCV + CNN + Pretrained Models</p>
 
-    <p><span class="highlight">Technology:</span> OpenCV + CNN + Pretrained Models.</p>
+<p style="margin-top:20px;">
+💡 This demo simulates AI output for visualization.
+</p>
 
-    <p><span class="highlight">Note:</span> This is a demo simulation of AI output.</p>
 </div>
 
 </div>
 
 <script>
 
-let imageInput = document.getElementById("imageInput");
 let preview = document.getElementById("preview");
+let input = document.getElementById("imageInput");
 
-imageInput.onchange = function() {
-    let file = imageInput.files[0];
-    preview.src = URL.createObjectURL(file);
+input.onchange = function(){
+    preview.src = URL.createObjectURL(input.files[0]);
 };
 
-function detect() {
+function detect(){
 
-    let genders = ["Male", "Female"];
-    let ages = ["(0-2)", "(4-6)", "(8-12)", "(15-20)", "(25-32)", "(38-43)", "(48-53)", "(60-100)"];
+    let loading = document.getElementById("loading");
+    let output = document.getElementById("output");
+    let faceBox = document.getElementById("faceBox");
 
-    let gender = genders[Math.floor(Math.random()*2)];
-    let age = ages[Math.floor(Math.random()*ages.length)];
+    output.style.opacity = 0;
+    loading.style.display = "block";
+    faceBox.style.display = "none";
 
-    document.getElementById("output").innerHTML =
-        `Detected: ${gender}, ${age}`;
+    setTimeout(()=>{
+
+        // Fake face box
+        faceBox.style.display = "block";
+        faceBox.style.top = "50px";
+        faceBox.style.left = "50px";
+        faceBox.style.width = "150px";
+        faceBox.style.height = "150px";
+
+        // Fake prediction
+        let genders = ["Male","Female"];
+        let ages = ["(0-2)","(4-6)","(8-12)","(15-20)","(25-32)","(38-43)","(48-53)","(60-100)"];
+
+        let gender = genders[Math.floor(Math.random()*2)];
+        let age = ages[Math.floor(Math.random()*ages.length)];
+        let confidence = (Math.random()*20 + 80).toFixed(2);
+
+        loading.style.display = "none";
+
+        output.innerHTML = `
+        👤 ${gender}, ${age} <br>
+        📊 Confidence: ${confidence}%`;
+
+        output.style.opacity = 1;
+
+    }, 1500);
 }
 
 </script>
