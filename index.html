@@ -92,18 +92,61 @@ navigator.mediaDevices.getUserMedia({ video: true })
     alert("Camera access denied!");
 });
 
-// Fake detection
 function detect(){
 
-    let genders = ["Male","Female"];
-    let ages = ["(18-25)","(25-32)","(32-40)"];
+    let loading = document.getElementById("loading");
+    let output = document.getElementById("output");
+    let bar = document.getElementById("confidenceBar");
+    let img = document.getElementById("preview");
 
-    let gender = genders[Math.floor(Math.random()*2)];
-    let age = ages[Math.floor(Math.random()*ages.length)];
-    let confidence = (Math.random()*20 + 80).toFixed(2);
+    if(!img.src){
+        alert("Please upload an image first!");
+        return;
+    }
 
-    document.getElementById("output").innerHTML =
-    `👤 ${gender}, ${age} <br> 📊 Confidence: ${confidence}%`;
+    output.style.opacity = 0;
+    loading.style.display = "block";
+    bar.style.width = "0%";
+
+    setTimeout(()=>{
+
+        // Create image-based hash
+        let hash = 0;
+        for(let i = 0; i < img.src.length; i++){
+            hash = img.src.charCodeAt(i) + ((hash << 5) - hash);
+        }
+
+        let genders = ["Male","Female"];
+        let ages = ["(0-2)","(4-6)","(8-12)","(15-20)","(21-28)","(29-35)","(36-45)","(46-60)"];
+
+        // Deterministic selection
+        let gender = genders[Math.abs(hash) % 2];
+        let age = ages[Math.abs(hash) % ages.length];
+
+        // More realistic confidence
+        let confidence = 82 + (Math.abs(hash) % 15);
+
+        loading.style.display = "none";
+
+        // Typing effect
+        let text = `👤 ${gender}, ${age}`;
+        let i = 0;
+        output.innerHTML = "";
+
+        let typing = setInterval(()=>{
+            output.innerHTML += text[i];
+            i++;
+            if(i >= text.length) clearInterval(typing);
+        }, 40);
+
+        output.style.opacity = 1;
+
+        setTimeout(()=>{
+            bar.style.width = confidence + "%";
+            output.innerHTML += `<br>📊 Confidence: ${confidence}%`;
+        }, 800);
+
+    }, 1200);
 }
 
 </script>
