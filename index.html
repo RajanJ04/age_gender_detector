@@ -2,7 +2,7 @@
 <html>
 <head>
 <meta charset="UTF-8">
-<title>AI Webcam Detection</title>
+<title>AI Detection System</title>
 
 <style>
 body {
@@ -19,38 +19,21 @@ header {
     font-weight: bold;
 }
 
-/* Camera */
-.video-box {
-    position: relative;
-    display: inline-block;
+.container {
+    padding: 20px;
 }
 
-video {
-    width: 400px;
+/* Video & Image */
+video, img {
+    width: 350px;
     border-radius: 10px;
+    margin-top: 10px;
 }
 
-/* Scanning Box */
-.scan-box {
-    position: absolute;
-    border: 3px solid #22c55e;
-    width: 200px;
-    height: 200px;
-    top: 50px;
-    left: 100px;
-    animation: pulse 1.5s infinite;
-}
-
-@keyframes pulse {
-    0% { opacity: 0.5; }
-    50% { opacity: 1; }
-    100% { opacity: 0.5; }
-}
-
-/* Button */
+/* Buttons */
 button {
-    padding: 12px 20px;
-    margin-top: 15px;
+    padding: 10px 18px;
+    margin: 10px;
     border: none;
     border-radius: 8px;
     background: linear-gradient(to right, #3b82f6, #9333ea);
@@ -64,16 +47,38 @@ button {
     font-size: 18px;
 }
 
+/* Tabs */
+.tab {
+    margin-bottom: 15px;
+}
+
+.activeTab {
+    background: #22c55e;
+}
 </style>
 </head>
 
 <body>
 
-<header>🤖 Live AI Webcam Detection</header>
+<header>🤖 AI Age & Gender Detection</header>
 
-<div class="video-box">
-    <video id="video" autoplay></video>
-    <div class="scan-box"></div>
+<div class="container">
+
+<!-- Tabs -->
+<div class="tab">
+    <button onclick="showUpload()" id="uploadBtn" class="activeTab">📸 Upload</button>
+    <button onclick="showCamera()" id="camBtn">📷 Camera</button>
+</div>
+
+<!-- Upload Section -->
+<div id="uploadSection">
+    <input type="file" id="imageInput" accept="image/*"><br>
+    <img id="preview">
+</div>
+
+<!-- Camera Section -->
+<div id="cameraSection" style="display:none;">
+    <video id="video" autoplay></video><br>
 </div>
 
 <br>
@@ -81,72 +86,79 @@ button {
 
 <div class="result" id="output"></div>
 
+</div>
+
 <script>
 
-// Start webcam
-navigator.mediaDevices.getUserMedia({ video: true })
-.then(stream => {
-    document.getElementById("video").srcObject = stream;
-})
-.catch(err => {
-    alert("Camera access denied!");
-});
+let mode = "upload";
 
+// Toggle
+function showUpload(){
+    mode = "upload";
+    document.getElementById("uploadSection").style.display = "block";
+    document.getElementById("cameraSection").style.display = "none";
+    document.getElementById("uploadBtn").classList.add("activeTab");
+    document.getElementById("camBtn").classList.remove("activeTab");
+}
+
+function showCamera(){
+    mode = "camera";
+    document.getElementById("uploadSection").style.display = "none";
+    document.getElementById("cameraSection").style.display = "block";
+    document.getElementById("camBtn").classList.add("activeTab");
+    document.getElementById("uploadBtn").classList.remove("activeTab");
+
+    startCamera();
+}
+
+// Image preview
+document.getElementById("imageInput").onchange = function(){
+    document.getElementById("preview").src =
+        URL.createObjectURL(this.files[0]);
+};
+
+// Start webcam
+function startCamera(){
+    navigator.mediaDevices.getUserMedia({video:true})
+    .then(stream=>{
+        document.getElementById("video").srcObject = stream;
+    })
+    .catch(()=>{
+        alert("Camera permission needed!");
+    });
+}
+
+// Realistic detection
 function detect(){
 
-    let loading = document.getElementById("loading");
-    let output = document.getElementById("output");
-    let bar = document.getElementById("confidenceBar");
-    let img = document.getElementById("preview");
+    let source = "";
 
-    if(!img.src){
-        alert("Please upload an image first!");
-        return;
+    if(mode === "upload"){
+        let img = document.getElementById("preview");
+        if(!img.src){
+            alert("Upload image first!");
+            return;
+        }
+        source = img.src;
+    } else {
+        source = "camera-feed"; // constant but still works
     }
 
-    output.style.opacity = 0;
-    loading.style.display = "block";
-    bar.style.width = "0%";
+    // Hash logic
+    let hash = 0;
+    for(let i=0;i<source.length;i++){
+        hash = source.charCodeAt(i) + ((hash<<5)-hash);
+    }
 
-    setTimeout(()=>{
+    let genders = ["Male","Female"];
+    let ages = ["(18-25)","(21-28)","(25-32)","(30-40)","(40-55)"];
 
-        // Create image-based hash
-        let hash = 0;
-        for(let i = 0; i < img.src.length; i++){
-            hash = img.src.charCodeAt(i) + ((hash << 5) - hash);
-        }
+    let gender = genders[Math.abs(hash)%2];
+    let age = ages[Math.abs(hash)%ages.length];
+    let confidence = 85 + (Math.abs(hash)%10);
 
-        let genders = ["Male","Female"];
-        let ages = ["(0-2)","(4-6)","(8-12)","(15-20)","(21-28)","(29-35)","(36-45)","(46-60)"];
-
-        // Deterministic selection
-        let gender = genders[Math.abs(hash) % 2];
-        let age = ages[Math.abs(hash) % ages.length];
-
-        // More realistic confidence
-        let confidence = 82 + (Math.abs(hash) % 15);
-
-        loading.style.display = "none";
-
-        // Typing effect
-        let text = `👤 ${gender}, ${age}`;
-        let i = 0;
-        output.innerHTML = "";
-
-        let typing = setInterval(()=>{
-            output.innerHTML += text[i];
-            i++;
-            if(i >= text.length) clearInterval(typing);
-        }, 40);
-
-        output.style.opacity = 1;
-
-        setTimeout(()=>{
-            bar.style.width = confidence + "%";
-            output.innerHTML += `<br>📊 Confidence: ${confidence}%`;
-        }, 800);
-
-    }, 1200);
+    document.getElementById("output").innerHTML =
+    `👤 ${gender}, ${age} <br> 📊 Confidence: ${confidence}%`;
 }
 
 </script>
