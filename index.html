@@ -13,8 +13,8 @@ body {
 }
 
 header {
-    padding: 20px;
     text-align: center;
+    padding: 20px;
     font-size: 22px;
     font-weight: bold;
 }
@@ -35,6 +35,11 @@ header {
     backdrop-filter: blur(10px);
     padding: 20px;
     border-radius: 15px;
+    transition: 0.3s;
+}
+
+.card:hover {
+    transform: translateY(-5px);
 }
 
 /* Button */
@@ -48,38 +53,60 @@ button {
     margin-top: 10px;
 }
 
-/* Image */
-.img-box {
-    position: relative;
-    display: inline-block;
+button:hover {
+    transform: scale(1.05);
 }
 
+/* Image */
 img {
     max-width: 350px;
     border-radius: 10px;
-}
-
-/* Fake Face Box */
-.face-box {
-    position: absolute;
-    border: 3px solid #22c55e;
-    display: none;
+    margin-top: 15px;
 }
 
 /* Loading */
 .loading {
     margin-top: 15px;
-    color: yellow;
     display: none;
+}
+
+/* Spinner */
+.spinner {
+    border: 4px solid #1e293b;
+    border-top: 4px solid #3b82f6;
+    border-radius: 50%;
+    width: 30px;
+    height: 30px;
+    animation: spin 1s linear infinite;
+    margin: auto;
+}
+
+@keyframes spin {
+    100% { transform: rotate(360deg); }
 }
 
 /* Result */
 .result {
-    margin-top: 15px;
+    margin-top: 20px;
     font-size: 18px;
-    color: #22c55e;
     opacity: 0;
     transition: 0.5s;
+}
+
+/* Confidence Bar */
+.bar-bg {
+    width: 100%;
+    background: #1e293b;
+    border-radius: 10px;
+    margin-top: 10px;
+}
+
+.bar-fill {
+    height: 10px;
+    width: 0%;
+    background: #22c55e;
+    border-radius: 10px;
+    transition: 1s;
 }
 
 /* Explanation */
@@ -96,43 +123,45 @@ img {
 
 <div class="main">
 
-<!-- LEFT -->
 <div class="left">
 
 <div class="card">
 
-    <h3>📸 Upload Image</h3>
+<h3>📸 Upload Image</h3>
 
-    <input type="file" id="imageInput" accept="image/*"><br>
-    <button onclick="detect()">Detect</button>
+<input type="file" id="imageInput" accept="image/*"><br>
+<button onclick="detect()">Detect</button>
 
-    <div class="img-box">
-        <img id="preview">
-        <div id="faceBox" class="face-box"></div>
-    </div>
+<img id="preview">
 
-    <div class="loading" id="loading">⏳ Detecting face...</div>
+<div class="loading" id="loading">
+    <div class="spinner"></div>
+    <p style="text-align:center;">Analyzing image...</p>
+</div>
 
-    <div class="result" id="output"></div>
+<div class="result" id="output"></div>
 
+<div class="bar-bg">
+    <div class="bar-fill" id="confidenceBar"></div>
 </div>
 
 </div>
 
-<!-- RIGHT -->
+</div>
+
 <div class="right card">
 
 <h3>📘 How It Works</h3>
 
-<p><span class="highlight">Step 1:</span> Detect face using deep learning.</p>
-<p><span class="highlight">Step 2:</span> Extract facial features.</p>
-<p><span class="highlight">Step 3:</span> Predict gender.</p>
-<p><span class="highlight">Step 4:</span> Estimate age range.</p>
+<p><span class="highlight">Step 1:</span> Image preprocessing</p>
+<p><span class="highlight">Step 2:</span> Face detection</p>
+<p><span class="highlight">Step 3:</span> Gender classification</p>
+<p><span class="highlight">Step 4:</span> Age estimation</p>
 
-<p><span class="highlight">Tech:</span> OpenCV + CNN + Pretrained Models</p>
+<p><span class="highlight">Tech:</span> OpenCV + CNN Models</p>
 
 <p style="margin-top:20px;">
-💡 This demo simulates AI output for visualization.
+💡 This demo simulates AI predictions for visualization.
 </p>
 
 </div>
@@ -141,8 +170,8 @@ img {
 
 <script>
 
-let preview = document.getElementById("preview");
 let input = document.getElementById("imageInput");
+let preview = document.getElementById("preview");
 
 input.onchange = function(){
     preview.src = URL.createObjectURL(input.files[0]);
@@ -152,22 +181,14 @@ function detect(){
 
     let loading = document.getElementById("loading");
     let output = document.getElementById("output");
-    let faceBox = document.getElementById("faceBox");
+    let bar = document.getElementById("confidenceBar");
 
     output.style.opacity = 0;
     loading.style.display = "block";
-    faceBox.style.display = "none";
+    bar.style.width = "0%";
 
     setTimeout(()=>{
 
-        // Fake face box
-        faceBox.style.display = "block";
-        faceBox.style.top = "50px";
-        faceBox.style.left = "50px";
-        faceBox.style.width = "150px";
-        faceBox.style.height = "150px";
-
-        // Fake prediction
         let genders = ["Male","Female"];
         let ages = ["(0-2)","(4-6)","(8-12)","(15-20)","(25-32)","(38-43)","(48-53)","(60-100)"];
 
@@ -177,11 +198,24 @@ function detect(){
 
         loading.style.display = "none";
 
-        output.innerHTML = `
-        👤 ${gender}, ${age} <br>
-        📊 Confidence: ${confidence}%`;
+        // Typing effect
+        let text = `👤 ${gender}, ${age}`;
+        let i = 0;
+        output.innerHTML = "";
+
+        let typing = setInterval(()=>{
+            output.innerHTML += text[i];
+            i++;
+            if(i >= text.length) clearInterval(typing);
+        }, 50);
 
         output.style.opacity = 1;
+
+        // Animate confidence bar
+        setTimeout(()=>{
+            bar.style.width = confidence + "%";
+            output.innerHTML += `<br>📊 Confidence: ${confidence}%`;
+        }, 800);
 
     }, 1500);
 }
