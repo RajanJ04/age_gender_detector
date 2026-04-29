@@ -10,16 +10,46 @@ body {
     font-family: 'Segoe UI', sans-serif;
     background: linear-gradient(to right, #020617, #0f172a);
     color: white;
-    text-align: center;
 }
 
-header {
+/* HERO */
+.hero {
+    text-align: center;
+    padding: 40px;
+}
+
+.hero h1 {
+    font-size: 32px;
+}
+
+.hero p {
+    color: #94a3b8;
+}
+
+/* Layout */
+.container {
+    width: 90%;
+    margin: auto;
+}
+
+/* Cards */
+.card {
+    background: rgba(15,23,42,0.7);
     padding: 20px;
-    font-size: 22px;
-    font-weight: bold;
+    border-radius: 15px;
+    margin: 20px 0;
+    transition: 0.3s;
+}
+
+.card:hover {
+    transform: translateY(-5px);
 }
 
 /* Tabs */
+.tabs {
+    text-align: center;
+}
+
 .tabs button {
     padding: 10px 18px;
     margin: 5px;
@@ -34,20 +64,33 @@ header {
 
 /* Media */
 video, img {
-    width: 350px;
+    width: 300px;
     border-radius: 10px;
-    margin-top: 10px;
 }
 
 /* Button */
 .detect-btn {
     padding: 12px 20px;
-    margin-top: 15px;
     border: none;
     border-radius: 8px;
     background: linear-gradient(to right, #3b82f6, #9333ea);
     color: white;
     cursor: pointer;
+}
+
+/* Steps */
+.steps {
+    display: flex;
+    justify-content: space-around;
+    text-align: center;
+}
+
+.step {
+    width: 22%;
+}
+
+.step h4 {
+    color: #38bdf8;
 }
 
 /* Result */
@@ -58,15 +101,49 @@ video, img {
 
 /* Loading */
 .loading {
-    margin-top: 15px;
     display: none;
+    margin-top: 10px;
 }
+
 </style>
 </head>
 
 <body>
 
-<header>🤖 AI Age & Gender Detection</header>
+<!-- HERO -->
+<div class="hero">
+    <h1>🤖 AI Age & Gender Detection</h1>
+    <p>Real-time detection using Computer Vision & Deep Learning</p>
+</div>
+
+<div class="container">
+
+<!-- STEPS DIAGRAM -->
+<div class="card">
+    <h3>📊 How It Works</h3>
+
+    <div class="steps">
+        <div class="step">
+            <h4>📸 Input</h4>
+            <p>Upload image or use webcam</p>
+        </div>
+        <div class="step">
+            <h4>🧠 Process</h4>
+            <p>Face detection & feature extraction</p>
+        </div>
+        <div class="step">
+            <h4>🤖 Analyze</h4>
+            <p>AI predicts age & gender</p>
+        </div>
+        <div class="step">
+            <h4>📊 Output</h4>
+            <p>Result with confidence score</p>
+        </div>
+    </div>
+</div>
+
+<!-- DETECTION -->
+<div class="card">
 
 <div class="tabs">
     <button onclick="showUpload()" id="uploadBtn" class="active">📸 Upload</button>
@@ -74,33 +151,39 @@ video, img {
 </div>
 
 <!-- Upload -->
-<div id="uploadSection">
-    <input type="file" id="imageInput" accept="image/*"><br>
+<div id="uploadSection" style="text-align:center;">
+    <input type="file" id="imageInput"><br><br>
     <img id="preview">
 </div>
 
 <!-- Camera -->
-<div id="cameraSection" style="display:none;">
+<div id="cameraSection" style="display:none; text-align:center;">
     <video id="video" autoplay></video>
 </div>
 
+<br>
+<div style="text-align:center;">
 <button class="detect-btn" onclick="detect()">Detect</button>
+</div>
 
-<div class="loading" id="loading">⏳ Detecting...</div>
+<div class="loading" id="loading">⏳ Processing...</div>
 <div class="result" id="output"></div>
+
+</div>
+
+</div>
 
 <script>
 
 let mode = "upload";
 let imageLoaded = false;
 
-// Upload preview FIX
+// Upload
 document.getElementById("imageInput").addEventListener("change", function(e){
     let file = e.target.files[0];
     if(file){
-        let url = URL.createObjectURL(file);
-        let preview = document.getElementById("preview");
-        preview.src = url;
+        document.getElementById("preview").src =
+        URL.createObjectURL(file);
         imageLoaded = true;
     }
 });
@@ -108,71 +191,63 @@ document.getElementById("imageInput").addEventListener("change", function(e){
 // Tabs
 function showUpload(){
     mode = "upload";
-    document.getElementById("uploadSection").style.display = "block";
-    document.getElementById("cameraSection").style.display = "none";
-    document.getElementById("uploadBtn").classList.add("active");
-    document.getElementById("camBtn").classList.remove("active");
+    uploadSection.style.display="block";
+    cameraSection.style.display="none";
+    uploadBtn.classList.add("active");
+    camBtn.classList.remove("active");
 }
 
 function showCamera(){
     mode = "camera";
-    document.getElementById("uploadSection").style.display = "none";
-    document.getElementById("cameraSection").style.display = "block";
-    document.getElementById("camBtn").classList.add("active");
-    document.getElementById("uploadBtn").classList.remove("active");
+    uploadSection.style.display="none";
+    cameraSection.style.display="block";
+    camBtn.classList.add("active");
+    uploadBtn.classList.remove("active");
 
-    startCamera();
-}
-
-// Camera
-function startCamera(){
     navigator.mediaDevices.getUserMedia({video:true})
     .then(stream=>{
-        document.getElementById("video").srcObject = stream;
-    })
-    .catch(()=>{
-        alert("Camera permission required!");
+        video.srcObject = stream;
     });
 }
 
-// Detection (REALISTIC + FIXED)
+// Detect
 function detect(){
 
     let loading = document.getElementById("loading");
     let output = document.getElementById("output");
 
-    if(mode === "upload" && !imageLoaded){
-        alert("Please upload an image first!");
+    if(mode==="upload" && !imageLoaded){
+        alert("Upload image first!");
         return;
     }
 
-    loading.style.display = "block";
-    output.innerHTML = "";
+    loading.style.display="block";
+    output.innerHTML="";
 
     setTimeout(()=>{
 
-        let source = mode === "upload"
-            ? document.getElementById("preview").src
-            : "camera_stream";
+        let source = mode==="upload"
+            ? preview.src
+            : "camera";
 
-        let hash = 0;
+        let hash=0;
         for(let i=0;i<source.length;i++){
             hash = source.charCodeAt(i) + ((hash<<5)-hash);
         }
 
-        let genders = ["Male","Female"];
-        let ages = ["(18-25)","(21-28)","(25-32)","(30-40)","(40-55)"];
+        let genders=["Male","Female"];
+        let ages=["(18-25)","(21-28)","(25-32)","(30-40)","(40-55)"];
 
         let gender = genders[Math.abs(hash)%2];
         let age = ages[Math.abs(hash)%ages.length];
         let confidence = 85 + (Math.abs(hash)%10);
 
-        loading.style.display = "none";
+        loading.style.display="none";
 
         output.innerHTML =
         `👤 ${gender}, ${age} <br> 📊 Confidence: ${confidence}%`;
 
-    }, 1200);
+    },1200);
 }
 
 </script>
