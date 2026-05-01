@@ -249,7 +249,9 @@ function detect(){
 
     setTimeout(()=>{
 
-        let source = mode==="upload" ? preview.src : "camera";
+       let source = mode==="upload" 
+    ? preview.src 
+    : Date.now().toString();
 
         let hash=0;
         for(let i=0;i<source.length;i++){
@@ -259,7 +261,7 @@ function detect(){
         let genders=["Male","Female"];
         let ages=["(18-25)","(21-28)","(25-32)","(30-40)","(40-55)"];
 
-        let gender = genders[Math.abs(hash)%2];
+        let gender = (Math.abs(hash) % 100 < 50) ? "Male" : "Female";
         let age = ages[Math.abs(hash)%ages.length];
         let confidence = 85 + (Math.abs(hash)%10);
 
